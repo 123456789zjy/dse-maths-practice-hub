@@ -2,6 +2,8 @@
 
 [Open the practice workbook](https://123456789zjy.github.io/dse-maths-practice-hub/)
 
-The public edition includes eight original HKDSE-style questions, worked solutions, step-by-step marking, and the iPad handwriting workbook. Handwriting and progress are stored in the student’s browser.
+The public workbook contains 2,564 questions: 1,084 questions from 34 HKDSE papers, 1,472 ICY Maths Beyond practice variants, and 8 original questions. Answers and marking references are included. Handwriting and progress are stored in the student’s browser.
 
-GitHub Pages publishes the static website from `main`, using the `docs/` directory.
+[Download the full deployment package](https://github.com/123456789zjy/dse-maths-practice-hub/releases/tag/bank-2026-11-26)
+
+The GitHub Pages workflow verifies the release ZIP and publishes the `docs/` folder inside it. The `docs/` folder in the repository contains the original pilot build.
