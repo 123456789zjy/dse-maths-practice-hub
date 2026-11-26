@@ -1,0 +1,60 @@
+name: Deploy practice workbook
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: GitHub release tag
+        required: true
+        type: string
+      sha256:
+        description: SHA-256 of the deployment ZIP
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify and unpack the release
+        env:
+          TAG: ${{ inputs.tag }}
+          EXPECTED_SHA256: ${{ inputs.sha256 }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          [[ "$TAG" =~ ^bank-[0-9]{4}-[0-9]{2}-[0-9]{2}(-[0-9]+)?$ ]]
+          [[ "$EXPECTED_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          curl --fail --silent --show-error --location --retry 3 \
+            --proto '=https' --proto-redir '=https' \
+            --output workbook.zip \
+            "https://github.com/$REPOSITORY/releases/download/$TAG/dse-maths-practice-hub-github-pages.zip"
+          printf '%s  workbook.zip\n' "$EXPECTED_SHA256" | sha256sum --check
+          unzip -q workbook.zip 'docs/*' -d site
+          test -s site/docs/index.html
+          test -s site/docs/bank/index.json
+      - name: Upload the site to Pages
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
+        with:
+          path: site/docs
+
+  deploy:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
